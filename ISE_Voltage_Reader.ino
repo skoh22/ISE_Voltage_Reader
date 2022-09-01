@@ -1,8 +1,15 @@
+#define BUTTON_PIN 1
+#define INPUT_PIN A1
+
 float Vy;
+bool nextMeasurement;
+int count;
+unsigned long startTime;
+
 void setup() {
   // put your setup code here, to run once:
-  pinMode(A0,INPUT);
-  pinMode(A1,INPUT);
+  pinMode(INPUT_PIN,INPUT);
+  pinMode(BUTTON_PIN,INPUT_PULLUP);
   //analogReference(DEFAULT);
   Serial.begin(9600);
   Serial.println("Potential (mV)");
@@ -10,32 +17,32 @@ void setup() {
 }
 
 void loop() {
+  //Serial.println("Start loop");
   // put your main code here, to run repeatedly:
-  int count = 0;
-  //while (count<100){ //1072
-  //float x = 0;
-  float y = 0;
-  //unsigned long starttime = millis();
-  for (int i = 0; i<1000;i++){
-    //x+=analogRead(A0);
-    y+=analogRead(A1);
-    //delay(1);
+  nextMeasurement = false;
+  startTime = millis();
+
+  //wait until button press
+  while (!(nextMeasurement or millis()-startTime>999999)){
+    
+    if (digitalRead(BUTTON_PIN)==0){
+      Serial.println("Next Measurement");
+      delay(2000);
+      nextMeasurement = true;
+      }
+     delay(2); 
     }
-  //unsigned long endtime = millis();
-  //long readtime = endtime-starttime;
-  //Serial.print("Read time: ");
-  //Serial.print(readtime);
-  //Serial.println(" ms");
-  
-  //float avg = x/1000.0 *1000;
-  //float V = (avg/1023.0)*1.1;
-  Vy = 3.3*y/1023.0;
-  //Serial.print("Reading :");
-  //Serial.print(V,1);
-  //Serial.print("\t");
-  Serial.println(Vy,3);
-  //Serial.println(" mV");
-  count++;
-  //}
-  delay(4900);
+
+  //read number of readings
+  count = 0;
+  while (count<10){ //1072 //edit based on how many samples you want 
+    float y = 0;
+    for (int i = 0; i<1000;i++){
+      y+=analogRead(INPUT_PIN);
+      }
+    Vy = 3.3*y/1023.0;
+    Serial.println(Vy,3); //print value in mV to serial port
+    count++;
+    //delay(1888); //edit value for sampling frequency (-112 ms)
+  }
 }
